@@ -120,6 +120,8 @@
     <string name="airplay_phone_volume_sync_desc">Use Pixel media volume for HomePod volume</string>
     <string name="airplay_connect_title">Enter PIN for %s</string>
     <string name="airplay_pin_hint">PIN code</string>
+    <string name="airplay_ip_required">Enter an IP address</string>
+    <string name="airplay_invalid_port">Enter a port from 1 to 65535</string>
     <string name="airplay_manual_ip">Manual IP</string>
     <string name="airplay_manual_ip_hint">IP address (e.g. 192.168.1.100)</string>
     <string name="airplay_manual_port_hint">Port (default 7000)</string>

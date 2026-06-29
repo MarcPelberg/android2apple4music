@@ -92,12 +92,14 @@ public class AirPlayFragment extends Fragment {
         v -> {
           String ip = manualIp.getText() != null ? manualIp.getText().toString().trim() : "";
           if (ip.isEmpty()) {
-            Toast.makeText(requireContext(), "Enter an IP address", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.airplay_ip_required, Toast.LENGTH_SHORT)
+                .show();
             return;
           }
           String portStr =
               manualPort.getText() != null ? manualPort.getText().toString().trim() : "";
-          int port = portStr.isEmpty() ? 7000 : Integer.parseInt(portStr);
+          Integer port = _parseManualPort(portStr);
+          if (port == null) return;
           _pendingDevice = new AirPlayService.AirPlayDevice("Manual (" + ip + ")", ip, port);
           _updateStatus(
               R.drawable.ic_sync, R.string.airplay_connecting, R.string.airplay_connecting_detail);
@@ -128,22 +130,13 @@ public class AirPlayFragment extends Fragment {
 
           @Override
           public void onDisconnected(String error) {
-            _pendingDevice = null;
-            _updateStatus(
-                R.drawable.ic_error,
-                R.string.airplay_no_devices,
-                R.string.airplay_no_devices_detail);
-            connectBtn.setText(R.string.connect);
-            volumeLayout.setVisibility(View.GONE);
-            if (airplay.getDevices().isEmpty()) {
-              connectBtn.setVisibility(View.GONE);
-              deviceSpinner.setVisibility(View.GONE);
-            }
+            _showDisconnectedState();
           }
 
           @Override
           public void onError(String error) {
             Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+            _showDisconnectedState();
           }
 
           @Override
@@ -186,6 +179,7 @@ public class AirPlayFragment extends Fragment {
                   .stopService(
                       new android.content.Intent(getContext(), AirPlayForegroundService.class));
             }
+            _showDisconnectedState();
             return;
           }
           AirPlayService.AirPlayDevice dev = _getSelectedDevice();
@@ -261,6 +255,33 @@ public class AirPlayFragment extends Fragment {
     statusIcon.setImageResource(iconRes);
     statusTitle.setText(titleRes);
     statusDetail.setText(detailRes);
+  }
+
+  private Integer _parseManualPort(String portStr) {
+    if (portStr == null || portStr.isEmpty()) return 7000;
+    try {
+      int port = Integer.parseInt(portStr);
+      if (port >= 1 && port <= 65535) return port;
+    } catch (NumberFormatException ignored) {
+      // Fall through to the user-facing validation message below.
+    }
+    Toast.makeText(requireContext(), R.string.airplay_invalid_port, Toast.LENGTH_SHORT).show();
+    return null;
+  }
+
+  private void _showDisconnectedState() {
+    _pendingDevice = null;
+    _updateStatus(
+        R.drawable.ic_error, R.string.airplay_no_devices, R.string.airplay_no_devices_detail);
+    connectBtn.setText(R.string.connect);
+    volumeLayout.setVisibility(View.GONE);
+    if (AirPlayService.getInstance().getDevices().isEmpty()) {
+      connectBtn.setVisibility(View.GONE);
+      deviceSpinner.setVisibility(View.GONE);
+    } else {
+      connectBtn.setVisibility(View.VISIBLE);
+      deviceSpinner.setVisibility(View.VISIBLE);
+    }
   }
 
   private AirPlayService.AirPlayDevice _getSelectedDevice() {
