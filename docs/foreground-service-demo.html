@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Android2Apple4Music Foreground Service Demo</title>
+  <style>
+    body {
+      background: #121018;
+      color: #f5f2ff;
+      font-family: Arial, sans-serif;
+      line-height: 1.5;
+      margin: 0;
+      padding: 32px;
+    }
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+    }
+    video {
+      width: 100%;
+      border: 1px solid #6f618f;
+      border-radius: 8px;
+      background: #000;
+    }
+    a {
+      color: #c7b8ff;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Android2Apple4Music Foreground Service Demo</h1>
+    <p>
+      This video demonstrates why Android2Apple4Music requests
+      <code>FOREGROUND_SERVICE_MEDIA_PROJECTION</code>. The app starts a
+      user-visible foreground service after the user approves Android's media
+      projection prompt so playback audio can be sent to an AirPlay-compatible
+      speaker.
+    </p>
+    <video controls preload="metadata">
+      <source src="foreground-service-demo.mp4" type="video/mp4">
+      <a href="foreground-service-demo.mp4">Download the demo video.</a>
+    </video>
+  </main>
+</body>
+</html>
