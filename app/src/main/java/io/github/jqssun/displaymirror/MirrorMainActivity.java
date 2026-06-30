@@ -29,6 +29,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.topjohnwu.superuser.Shell;
 import io.github.jqssun.displaymirror.job.AcquireShizuku;
 import org.lsposed.hiddenapibypass.HiddenApiBypass;
@@ -318,6 +319,16 @@ public class MirrorMainActivity extends AppCompatActivity {
   }
 
   public void requestAirPlayProjection() {
+    new MaterialAlertDialogBuilder(this)
+        .setTitle(R.string.airplay_share_music_title)
+        .setMessage(R.string.airplay_share_music_message)
+        .setPositiveButton(
+            R.string.airplay_share_music_continue, (dialog, which) -> _launchAirPlayProjection())
+        .setNegativeButton(android.R.string.cancel, null)
+        .show();
+  }
+
+  private void _launchAirPlayProjection() {
     MediaProjectionManager mpm =
         (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
     if (mpm != null) {

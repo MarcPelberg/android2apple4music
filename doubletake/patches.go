@@ -279,6 +279,7 @@ func (c *AirPlayClient) SetupAudioOnly(ctx context.Context, cfg StreamConfig) (*
 	}
 	session.audioStream = audioStream
 	go session.heartbeatLoop(ctx, audioURI, rtspSessionID)
+	go session.feedbackLoop(ctx, audioURI)
 	return session, nil
 }
 

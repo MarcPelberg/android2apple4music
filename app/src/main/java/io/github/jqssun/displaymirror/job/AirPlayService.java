@@ -61,8 +61,8 @@ public class AirPlayService {
   private int pendingWidth, pendingHeight, pendingFps;
   private boolean pendingAudioOnly;
   private int volumePercent = 100;
-  private boolean phoneVolumeSyncEnabled = Pref.getAirPlayPhoneVolumeSync();
-  private boolean mutePhoneSpeakerEnabled = Pref.getAirPlayMutePhoneSpeaker();
+  private boolean phoneVolumeSyncEnabled = true;
+  private boolean mutePhoneSpeakerEnabled = true;
   private boolean localPhoneMuteActive;
   private ContentObserver phoneVolumeObserver;
 
@@ -123,10 +123,11 @@ public class AirPlayService {
       setVolumePercent(0);
       return volumePercent;
     }
+    int step = _phoneVolumeStepPercent();
     if (direction == AudioManager.ADJUST_RAISE) {
-      setVolumePercent(volumePercent + 5);
+      setVolumePercent(volumePercent + step);
     } else if (direction == AudioManager.ADJUST_LOWER) {
-      setVolumePercent(volumePercent - 5);
+      setVolumePercent(volumePercent - step);
     }
     return volumePercent;
   }
@@ -136,10 +137,10 @@ public class AirPlayService {
   }
 
   public void setPhoneVolumeSyncEnabled(boolean enabled) {
-    phoneVolumeSyncEnabled = enabled;
-    Pref.setAirPlayPhoneVolumeSync(enabled);
+    phoneVolumeSyncEnabled = true;
+    Pref.setAirPlayPhoneVolumeSync(true);
     _updatePhoneVolumeObserver();
-    if (AirPlayVolume.shouldSyncFromPhoneVolume(enabled, localPhoneMuteActive)) {
+    if (AirPlayVolume.shouldSyncFromPhoneVolume(phoneVolumeSyncEnabled, localPhoneMuteActive)) {
       syncVolumeFromPhone();
     }
   }
@@ -149,13 +150,9 @@ public class AirPlayService {
   }
 
   public void setMutePhoneSpeakerEnabled(boolean enabled) {
-    mutePhoneSpeakerEnabled = enabled;
-    Pref.setAirPlayMutePhoneSpeaker(enabled);
-    if (enabled) {
-      _applyLocalPhoneMute();
-    } else {
-      _restoreLocalPhoneAudio();
-    }
+    mutePhoneSpeakerEnabled = true;
+    Pref.setAirPlayMutePhoneSpeaker(true);
+    _applyLocalPhoneMute();
     _updatePhoneVolumeObserver();
   }
 
@@ -189,6 +186,10 @@ public class AirPlayService {
               @Override
               public void onConnected() {
                 connected = true;
+                phoneVolumeSyncEnabled = true;
+                mutePhoneSpeakerEnabled = true;
+                Pref.setAirPlayPhoneVolumeSync(true);
+                Pref.setAirPlayMutePhoneSpeaker(true);
                 if (AirPlayVolume.shouldSyncFromPhoneVolume(
                     phoneVolumeSyncEnabled, localPhoneMuteActive)) {
                   syncVolumeFromPhone();
@@ -474,6 +475,15 @@ public class AirPlayService {
       return null;
     }
     return (AudioManager) ctx.getSystemService(Context.AUDIO_SERVICE);
+  }
+
+  private int _phoneVolumeStepPercent() {
+    AudioManager audioManager = _getAudioManager();
+    if (audioManager == null) {
+      return 5;
+    }
+    return AirPlayVolume.volumeStepPercent(
+        audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
   }
 
   private void _applyLocalPhoneMute() {

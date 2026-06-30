@@ -20,4 +20,11 @@ final class AirPlayVolume {
       boolean phoneVolumeSyncEnabled, int volume, int maxVolume) {
     return phoneVolumeSyncEnabled && maxVolume > 0 && volume > 0;
   }
+
+  static int volumeStepPercent(int maxVolume) {
+    if (maxVolume <= 0) {
+      return 1;
+    }
+    return Math.max(1, Math.round(100f / maxVolume));
+  }
 }

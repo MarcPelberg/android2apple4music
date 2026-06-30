@@ -14,7 +14,6 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.TextInputEditText;
 import io.github.jqssun.displaymirror.job.AirPlayService;
@@ -27,7 +26,6 @@ public class AirPlayFragment extends Fragment {
   private MaterialButton scanBtn, connectBtn;
   private LinearLayout manualLayout, volumeLayout;
   private Slider volumeSlider;
-  private MaterialSwitch mutePhoneSpeakerSwitch, phoneVolumeSyncSwitch;
   private TextInputEditText manualIp, manualPort;
   private AirPlayService.AirPlayDevice _pendingDevice;
 
@@ -55,8 +53,6 @@ public class AirPlayFragment extends Fragment {
     connectBtn = view.findViewById(R.id.airplayConnectBtn);
     volumeLayout = view.findViewById(R.id.airplayVolumeLayout);
     volumeSlider = view.findViewById(R.id.airplayVolumeSlider);
-    mutePhoneSpeakerSwitch = view.findViewById(R.id.airplayMutePhoneSpeakerSwitch);
-    phoneVolumeSyncSwitch = view.findViewById(R.id.airplayPhoneVolumeSyncSwitch);
 
     manualLayout = view.findViewById(R.id.airplayManualLayout);
     manualIp = view.findViewById(R.id.airplayManualIp);
@@ -75,18 +71,12 @@ public class AirPlayFragment extends Fragment {
 
     AirPlayService airplay = AirPlayService.getInstance();
     volumeSlider.setValue(airplay.getVolumePercent());
-    mutePhoneSpeakerSwitch.setChecked(airplay.isMutePhoneSpeakerEnabled());
-    phoneVolumeSyncSwitch.setChecked(airplay.isPhoneVolumeSyncEnabled());
     volumeSlider.addOnChangeListener(
         (slider, value, fromUser) -> {
           if (fromUser) {
             airplay.setVolumePercent(Math.round(value));
           }
         });
-    mutePhoneSpeakerSwitch.setOnCheckedChangeListener(
-        (buttonView, isChecked) -> airplay.setMutePhoneSpeakerEnabled(isChecked));
-    phoneVolumeSyncSwitch.setOnCheckedChangeListener(
-        (buttonView, isChecked) -> airplay.setPhoneVolumeSyncEnabled(isChecked));
 
     manualConnectBtn.setOnClickListener(
         v -> {

@@ -21,8 +21,8 @@ android {
         applicationId "com.marcpelberg.android2apple4music"
         minSdk 26
         targetSdk 35
-        versionCode 41
-        versionName "0.0.41-android2apple4music"
+        versionCode 42
+        versionName "0.0.42-android2apple4music"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "boolean", "ANDROID2APPLE4MUSIC_ONLY", (!buildSunshineNative).toString()

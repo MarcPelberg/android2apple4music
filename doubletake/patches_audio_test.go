@@ -231,6 +231,125 @@ func TestSetupAudioOnlySkipsVideoSetup(t *testing.T) {
 	}
 }
 
+func TestSetupAudioOnlyStartsFeedbackKeepalive(t *testing.T) {
+	rtspListener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("listen rtsp: %v", err)
+	}
+	defer rtspListener.Close()
+
+	requests := make(chan rtspTestRequest, 12)
+	serverErr := make(chan error, 1)
+	go func() {
+		conn, err := rtspListener.Accept()
+		if err != nil {
+			serverErr <- err
+			return
+		}
+		defer conn.Close()
+
+		reader := bufio.NewReader(conn)
+		setupCount := 0
+		for {
+			req, err := readRTSPTestRequest(reader)
+			if err != nil {
+				if err == io.EOF || strings.Contains(err.Error(), "closed") {
+					serverErr <- nil
+					return
+				}
+				serverErr <- err
+				return
+			}
+			requests <- req
+
+			switch req.method {
+			case "SETUP":
+				setupCount++
+				var setup map[string]interface{}
+				if _, err := plist.Unmarshal(req.body, &setup); err != nil {
+					serverErr <- fmt.Errorf("decode setup plist: %w", err)
+					return
+				}
+				var respBody []byte
+				switch setupCount {
+				case 1:
+					respBody, err = plist.Marshal(map[string]interface{}{}, plist.BinaryFormat)
+				case 2:
+					respBody, err = plist.Marshal(map[string]interface{}{
+						"streams": []interface{}{
+							map[string]interface{}{
+								"type":        int64(96),
+								"dataPort":    int64(6100),
+								"controlPort": int64(6101),
+							},
+						},
+					}, plist.BinaryFormat)
+				default:
+					serverErr <- fmt.Errorf("unexpected SETUP request %d", setupCount)
+					return
+				}
+				if err != nil {
+					serverErr <- err
+					return
+				}
+				if err := writeRTSPTestResponse(conn, 200, map[string]string{"Session": "audio-session-1"}, respBody); err != nil {
+					serverErr <- err
+					return
+				}
+			case "RECORD", "SET_PARAMETER", "POST", "GET_PARAMETER":
+				if err := writeRTSPTestResponse(conn, 200, nil, nil); err != nil {
+					serverErr <- err
+					return
+				}
+			case "TEARDOWN":
+				if err := writeRTSPTestResponse(conn, 200, nil, nil); err != nil {
+					serverErr <- err
+					return
+				}
+				serverErr <- nil
+				return
+			default:
+				serverErr <- fmt.Errorf("unexpected RTSP method %s", req.method)
+				return
+			}
+		}
+	}()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	client := NewAirPlayClient("127.0.0.1", rtspListener.Addr().(*net.TCPAddr).Port)
+	if err := client.Connect(ctx); err != nil {
+		t.Fatalf("connect: %v", err)
+	}
+	defer client.Close()
+
+	session, err := client.SetupAudioOnly(ctx, StreamConfig{})
+	if err != nil {
+		t.Fatalf("SetupAudioOnly: %v", err)
+	}
+
+	foundFeedback := false
+	deadline := time.After(750 * time.Millisecond)
+	for !foundFeedback {
+		select {
+		case req := <-requests:
+			if req.method == "POST" && req.uri == "/feedback" {
+				foundFeedback = true
+			}
+		case <-deadline:
+			t.Fatal("audio-only session did not start feedback keepalive")
+		}
+	}
+
+	if err := session.Close(); err != nil {
+		t.Fatalf("Close: %v", err)
+	}
+	if err := <-serverErr; err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestSetAudioVolumeSendsAirPlayVolumeParameter(t *testing.T) {
 	rtspListener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {

@@ -35,6 +35,13 @@ public class AirPlayServiceTest {
   }
 
   @Test
+  public void volumeStepPercentMatchesOnePhoneMediaStep() {
+    assertEquals(4, AirPlayVolume.volumeStepPercent(25));
+    assertEquals(10, AirPlayVolume.volumeStepPercent(10));
+    assertEquals(1, AirPlayVolume.volumeStepPercent(0));
+  }
+
+  @Test
   public void captureBufferBytesKeepsSeveralAirPlayFramesQueued() {
     assertEquals(45056, AirPlayAudioQuality.captureBufferBytes(1024, 1408));
     assertEquals(80000, AirPlayAudioQuality.captureBufferBytes(20000, 1408));
