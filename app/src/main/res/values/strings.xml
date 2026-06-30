@@ -111,11 +111,11 @@
     <string name="airplay_connecting">Connecting to HomePod</string>
     <string name="airplay_connecting_detail">Looking on the local network</string>
     <string name="airplay_connected">Connected</string>
-    <string name="airplay_connected_detail">Audio capture is active</string>
+    <string name="airplay_connected_detail">Share audio is active</string>
     <string name="airplay_devices_found_detail">Choose the HomePod and connect</string>
     <string name="airplay_volume">HomePod Volume</string>
-    <string name="airplay_share_music_title">Share Music</string>
-    <string name="airplay_share_music_message">Android will call the next step &quot;Share screen.&quot; Tap it to send music audio to your HomePod.</string>
+    <string name="airplay_share_music_title">Share Audio</string>
+    <string name="airplay_share_music_message">Android will call the next step &quot;Share screen.&quot; Tap it to share audio with your HomePod.</string>
     <string name="airplay_share_music_continue">Continue</string>
     <string name="airplay_connect_title">Enter PIN for %s</string>
     <string name="airplay_pin_hint">PIN code</string>
